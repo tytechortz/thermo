@@ -13,6 +13,7 @@ url = "http://10.0.1.7:8080"
 
 # Build Dash layout
 app = dash.Dash(__name__)
+app.config['suppress_callback_exceptions']=True
 
 app.layout=html.Div([
     html.Div([
@@ -64,25 +65,46 @@ def update_daily_stats(data):
     df_stats['datetime'] = pd.to_datetime(df_stats[0])
     df_stats = df_stats.set_index('datetime')
 
-    record_highs = df_stats.groupby(df_stats.index.strftime('%m-%d')).max()
-    record_lows = df_stats.groupby(df_stats.index.strftime('%m-%d')).min()
+    td = dt.now().day
+    tm = dt.now().month
+    ty = dt.now().year
+    ly = ty-1
 
     today = time.strftime("%m-%d")
 
+    record_high_temps = df_stats.groupby(df_stats.index.strftime('%m-%d')).max()
+    record_high = record_high_temps.loc[record_high_temps.index == today]
+    print(record_high)
 
-    record_high = record_highs.loc[record_highs.index == today]
-    record_low = record_lows.loc[record_lows.index == today]
+    record_highs = df_stats.resample('D').max()
+    print(record_highs)
+    daily_highs_date = record_highs.groupby([record_highs.index.month, record_highs.index.day]).idxmax()
+    print(daily_highs_date)
+    rec_high_date = daily_highs_date.loc[(tm,td), 1].year
+    print(rec_high_date)
+
+    record_low_temps = df_stats.groupby(df_stats.index.strftime('%m-%d')).min()
+    record_low = record_low_temps.loc[record_low_temps.index == today]
+    record_lows = df_stats.resample('D').min()
+    daily_lows_date = record_lows.groupby([record_lows.index.month, record_lows.index.day]).idxmin()
+    rec_low_date = daily_lows_date.loc[(tm,td), 1].year
+
+    
+    # print(rec_low_date)
+
+    # record_high = record_highs.loc[record_highs.index == today]
+    # record_low = record_lows.loc[record_lows.index == today]
     
 
     return (html.Div([
             html.H6('Record High', style={'text-align':'center'}),
-            html.H6('{:.1f} - {}'.format(record_high.iloc[0,1], record_high.iloc[0,0][0:4]), style={'text-align':'center'})
+            html.H6('{:.1f} - {}'.format(record_high.iloc[0,1], rec_high_date), style={'text-align':'center'})
         ],
             className='two columns pretty_container'
         ),
         html.Div([
             html.H6('Record Low', style={'text-align':'center'}),
-            html.H6('{:.1f} - {}'.format(record_low.iloc[0,1], record_low.iloc[0,0][0:4]), style={'text-align':'center'})
+            html.H6('{:.1f} - {}'.format(record_low.iloc[0,1], rec_low_date), style={'text-align':'center'})
         ],
             className='two columns pretty_container'
         ))
@@ -172,11 +194,11 @@ def process_df_daily(data):
     df2023 = dfdm[dfdm.index.year == 2023]
     # print(df2022)
 
-    record_high_temps = df_stats.groupby(df_stats.index.strftime('%m-%d')).max()
+    # record_high_temps = df_stats.groupby(df_stats.index.strftime('%m-%d')).max()
     # print(record_high_temps)
-    record_highs = df_stats.resample('D').max()
-    daily_highs = record_highs.groupby([record_highs.index.month, record_highs.index.day]).max()
-    low_daily_highs = record_highs.groupby([record_highs.index.month, record_highs.index.day]).min()
+    # record_highs = df_stats.resample('D').max()
+    # daily_highs = record_highs.groupby([record_highs.index.month, record_highs.index.day]).max()
+    # low_daily_highs = record_highs.groupby([record_highs.index.month, record_highs.index.day]).min()
     # low_daily_highs_date = record_highs.groupby([record_highs.index.month, record_highs.index.day]).idxmin()
     # daily_highs_date = record_highs.groupby([record_highs.index.month, record_highs.index.day]).idxmax()
 
@@ -185,10 +207,10 @@ def process_df_daily(data):
     # rec_low_high = low_daily_highs.loc[(tm,td), 1]
     # rec_low_high_date = low_daily_highs_date.loc[(tm,td), 1].year
 
-    record_low_temps = df_stats.groupby(df_stats.index.strftime('%m-%d')).min()
-    record_lows = df_stats.resample('D').min()
-    daily_lows = record_lows.groupby([record_lows.index.month, record_lows.index.day]).min()
-    high_daily_lows = record_lows.groupby([record_lows.index.month, record_lows.index.day]).max()
+    # record_low_temps = df_stats.groupby(df_stats.index.strftime('%m-%d')).min()
+    # record_lows = df_stats.resample('D').min()
+    # daily_lows = record_lows.groupby([record_lows.index.month, record_lows.index.day]).min()
+    # high_daily_lows = record_lows.groupby([record_lows.index.month, record_lows.index.day]).max()
     # high_daily_lows_date = record_lows.groupby([record_lows.index.month, record_lows.index.day]).idxmax()
     # daily_lows_date = record_lows.groupby([record_lows.index.month, record_lows.index.day]).idxmin()
     # rec_low_date = daily_lows_date.loc[(tm,td), 1].year
