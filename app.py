@@ -33,6 +33,7 @@ app.layout=html.Div([
     html.Div([
         html.Div(id='avg-high', style={'color':'red', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
         html.Div(id='avg-low', style={'color':'blue', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
+        html.Div(id='avg', style={'color':'black', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
     ],
         className='row'
     ),
@@ -60,9 +61,10 @@ app.layout=html.Div([
     dcc.Store(id='yest', storage_type='session'),
 ])
 
-@app.callback([
+@app.callback(
     Output('avg-high', 'children'),
-    Output('avg-low', 'children')],
+    Output('avg-low', 'children'),
+    Output('avg', 'children'),
     [Input('interval-component-graph', 'n_intervals')])
 def averages(n):
     day_of_year = dt.now().timetuple().tm_yday
@@ -71,6 +73,7 @@ def averages(n):
     df_s = df
     df_s['date'] = pd.to_datetime(df_s[0])
     df_s = df_s.set_index('date')
+    print(df_s)
 
     daily_highs = df_s.resample('D').max()
     daily_high = daily_highs.groupby([daily_highs.index.month, daily_highs.index.day]).idxmax(numeric_only=True)
@@ -127,6 +130,39 @@ def averages(n):
     lows_to_date_2023 = lows_2023.head(day_of_year)
     avg_low_to_date_2023 = lows_to_date_2023[1].mean()
 
+    avg_2018 = (avg_high_to_date_2018 + avg_low_to_date_2018) / 2
+
+    # daily_avgs = df_s.resample('D').mean()
+    # print(daily_avgs)
+
+    # avgs_2018 = daily_avgs[daily_avgs.index.year == 2018]
+    # avgs_to_date_2018 = avgs_2018.head(day_of_year)
+    # # print(avgs_to_date_2018)
+    # avg_to_date_2018 = avgs_to_date_2018.mean()
+    # # print(avg_to_date_2018)
+
+    # avgs_2019 = daily_avgs[daily_avgs.index.year == 2019]
+    # avgs_to_date_2019 = avgs_2019.head(day_of_year)
+    # avg_to_date_2019 = avgs_to_date_2019[1].mean()
+
+    # avgs_2020 = daily_avgs[daily_avgs.index.year == 2020]
+    # avgs_to_date_2020 = avgs_2020.head(day_of_year)
+    # avg_to_date_2020 = avgs_to_date_2020[1].mean()
+
+    # avgs_2021 = daily_avgs[daily_avgs.index.year == 2021]
+    # avgs_to_date_2021 = avgs_2021.head(day_of_year)
+    # avg_to_date_2021 = avgs_to_date_2021[1].mean()
+
+    # avgs_2022 = daily_lows[daily_avgs.index.year == 2022]
+    # avgs_to_date_2022 = avgs_2022.head(day_of_year)
+    # avg_to_date_2022 = avgs_to_date_2022[1].mean()
+
+    # avgs_2023 = daily_lows[daily_avgs.index.year == 2023]
+    # avgs_to_date_2023 = avgs_2023.head(day_of_year)
+    # avg_to_date_2023 = avgs_to_date_2023[1].mean()
+
+    
+
     return (html.Div([
         html.H6('Avg High'),
         html.H6('2018: {:.1f}'.format(avg_high_to_date_2018)),
@@ -139,32 +175,29 @@ def averages(n):
             className='two columns pretty_container'
         ),
         html.Div([
-        html.H6('Avg Low'),
-        html.H6('2018: {:.1f}'.format(avg_low_to_date_2018)),
-        html.H6('2019: {:.1f}'.format(avg_low_to_date_2019)),
-        html.H6('2020: {:.1f}'.format(avg_low_to_date_2020)),
-        html.H6('2021: {:.1f}'.format(avg_low_to_date_2021)),
-        html.H6('2022: {:.1f}'.format(avg_low_to_date_2022)),
-        html.H6('2023: {:.1f}'.format(avg_low_to_date_2023)),
+            html.H6('Avg Low'),
+            html.H6('2018: {:.1f}'.format(avg_low_to_date_2018)),
+            html.H6('2019: {:.1f}'.format(avg_low_to_date_2019)),
+            html.H6('2020: {:.1f}'.format(avg_low_to_date_2020)),
+            html.H6('2021: {:.1f}'.format(avg_low_to_date_2021)),
+            html.H6('2022: {:.1f}'.format(avg_low_to_date_2022)),
+            html.H6('2023: {:.1f}'.format(avg_low_to_date_2023)),
+        ],
+            className='two columns pretty_container'
+        ),
+        html.Div([
+            html.H6('Avg'),
+            html.H6('2018: {:.1f}'.format(avg_2018)),
+            # html.H6('2019: {:.1f}'.format(avg_to_date_2019)),
+            # html.H6('2020: {:.1f}'.format(avg_to_date_2020)),
+            # html.H6('2021: {:.1f}'.format(avg_to_date_2021)),
+            # html.H6('2022: {:.1f}'.format(avg_to_date_2022)),
+            # html.H6('2023: {:.1f}'.format(avg_to_date_2023)),
         ],
             className='two columns pretty_container'
         ))
 
-    # return [html.Div([
-    #     html.P('2018: {:.1f}'.format(avg_high_to_date_2018)),
-    #     html.P('2019: {:.1f}'.format(avg_high_to_date_2019)),
-    #     html.P('2020: {:.1f}'.format(avg_high_to_date_2020)),
-    #     html.P('2021: {:.1f}'.format(avg_high_to_date_2021)),
-    #     html.P('2022: {:.1f}'.format(avg_high_to_date_2022)),
-    #     html.P('2023: {:.1f}'.format(avg_high_to_date_2023)),
-    # ]),
-    # html.Div([
-    #     html.P('2018: {:.1f}'.format(avg_low_to_date_2018)),
-    #     html.P('2019: {:.1f}'.format(avg_low_to_date_2019)),
-    #     html.P('2020: {:.1f}'.format(avg_low_to_date_2020)),
-    #     html.P('2021: {:.1f}'.format(avg_low_to_date_2021)),
-    #     html.P('2022: {:.1f}'.format(avg_low_to_date_2022)),
-    #     html.P('2023: {:.1f}'.format(avg_low_to_date_2023)),
+    
     
 
 @app.callback(
