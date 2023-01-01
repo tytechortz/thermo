@@ -128,6 +128,7 @@ def averages(n):
     avg_low_to_date_2023 = lows_to_date_2023[1].mean()
 
     return (html.Div([
+        html.H6('Avg High'),
         html.H6('2018: {:.1f}'.format(avg_high_to_date_2018)),
         html.H6('2019: {:.1f}'.format(avg_high_to_date_2019)),
         html.H6('2020: {:.1f}'.format(avg_high_to_date_2020)),
@@ -137,7 +138,17 @@ def averages(n):
         ],
             className='two columns pretty_container'
         ),
-        html.H2('hey'))
+        html.Div([
+        html.H6('Avg Low'),
+        html.H6('2018: {:.1f}'.format(avg_low_to_date_2018)),
+        html.H6('2019: {:.1f}'.format(avg_low_to_date_2019)),
+        html.H6('2020: {:.1f}'.format(avg_low_to_date_2020)),
+        html.H6('2021: {:.1f}'.format(avg_low_to_date_2021)),
+        html.H6('2022: {:.1f}'.format(avg_low_to_date_2022)),
+        html.H6('2023: {:.1f}'.format(avg_low_to_date_2023)),
+        ],
+            className='two columns pretty_container'
+        ))
 
     # return [html.Div([
     #     html.P('2018: {:.1f}'.format(avg_high_to_date_2018)),
