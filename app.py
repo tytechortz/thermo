@@ -131,6 +131,11 @@ def averages(n):
     avg_low_to_date_2023 = lows_to_date_2023[1].mean()
 
     avg_2018 = (avg_high_to_date_2018 + avg_low_to_date_2018) / 2
+    avg_2019 = (avg_high_to_date_2019 + avg_low_to_date_2019) / 2
+    avg_2020 = (avg_high_to_date_2020 + avg_low_to_date_2020) / 2
+    avg_2021 = (avg_high_to_date_2021 + avg_low_to_date_2021) / 2
+    avg_2022 = (avg_high_to_date_2022 + avg_low_to_date_2022) / 2
+    avg_2023 = (avg_high_to_date_2023 + avg_low_to_date_2023) / 2
 
     # daily_avgs = df_s.resample('D').mean()
     # print(daily_avgs)
@@ -188,6 +193,12 @@ def averages(n):
         html.Div([
             html.H6('Avg'),
             html.H6('2018: {:.1f}'.format(avg_2018)),
+            html.H6('2019: {:.1f}'.format(avg_2019)),
+            html.H6('2020: {:.1f}'.format(avg_2020)),
+            html.H6('2021: {:.1f}'.format(avg_2021)),
+            html.H6('2022: {:.1f}'.format(avg_2022)),
+            html.H6('2023: {:.1f}'.format(avg_2023)),
+
             # html.H6('2019: {:.1f}'.format(avg_to_date_2019)),
             # html.H6('2020: {:.1f}'.format(avg_to_date_2020)),
             # html.H6('2021: {:.1f}'.format(avg_to_date_2021)),
