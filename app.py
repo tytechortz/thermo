@@ -30,7 +30,12 @@ app.layout=html.Div([
     ],
         className='row'
     ),
-    
+    html.Div([
+        html.Div(id='avg-high', style={'color':'red', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
+        html.Div(id='avg-low', style={'color':'blue', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
+    ],
+        className='row'
+    ),
     html.Div([
         dcc.Interval(
             id='interval-component-graph',
@@ -54,6 +59,92 @@ app.layout=html.Div([
     dcc.Store(id='last-year', storage_type='session'),
     dcc.Store(id='yest', storage_type='session'),
 ])
+
+@app.callback([
+    Output('avg-high', 'children'),
+    Output('avg-low', 'children')],
+    [Input('interval-component-graph', 'n_intervals')])
+def averages(n):
+    day_of_year = dt.now().timetuple().tm_yday
+    print(day_of_year)
+    df = pd.read_csv('../../tempjan19.csv', header=None)
+    df_s = df
+    df_s['date'] = pd.to_datetime(df_s[0])
+    df_s = df_s.set_index('date')
+
+    daily_highs = df_s.resample('D').max()
+    daily_high = daily_highs.groupby([daily_highs.index.month, daily_highs.index.day]).idxmax()
+
+    highs_2018 = daily_highs[daily_highs.index.year == 2018]
+    highs_to_date_2018 = highs_2018.head(day_of_year)
+    avg_high_to_date_2018 = highs_to_date_2018[1].mean()
+
+    highs_2019 = daily_highs[daily_highs.index.year == 2019]
+    highs_to_date_2019 = highs_2019.head(day_of_year)
+    avg_high_to_date_2019 = highs_to_date_2019[1].mean()
+
+    highs_2020 = daily_highs[daily_highs.index.year == 2020]
+    highs_to_date_2020 = highs_2020.head(day_of_year)
+    avg_high_to_date_2020 = highs_to_date_2020[1].mean()
+
+    highs_2021 = daily_highs[daily_highs.index.year == 2021]
+    highs_to_date_2021 = highs_2021.head(day_of_year)
+    avg_high_to_date_2021 = highs_to_date_2021[1].mean()
+
+    highs_2022 = daily_highs[daily_highs.index.year == 2022]
+    highs_to_date_2022 = highs_2022.head(day_of_year)
+    avg_high_to_date_2022 = highs_to_date_2022[1].mean()
+    # print(highs_to_date_2020)
+    highs_2023 = daily_highs[daily_highs.index.year == 2023]
+    highs_to_date_2023 = highs_2023.head(day_of_year)
+    avg_high_to_date_2023 = highs_to_date_2023[1].mean()
+
+    daily_lows = df_s.resample('D').min()
+    daily_low = daily_lows.groupby([daily_lows.index.month, daily_lows.index.day]).idxmin()
+
+
+    lows_2018 = daily_lows[daily_lows.index.year == 2018]
+    lows_to_date_2018 = lows_2018.head(day_of_year)
+    avg_low_to_date_2018 = lows_to_date_2018[1].mean()
+
+    lows_2019 = daily_lows[daily_lows.index.year == 2019]
+    lows_to_date_2019 = lows_2019.head(day_of_year)
+    avg_low_to_date_2019 = lows_to_date_2019[1].mean()
+
+    lows_2020 = daily_lows[daily_lows.index.year == 2020]
+    lows_to_date_2020 = lows_2020.head(day_of_year)
+    avg_low_to_date_2020 = lows_to_date_2020[1].mean()
+
+    lows_2021 = daily_lows[daily_lows.index.year == 2021]
+    lows_to_date_2021 = lows_2021.head(day_of_year)
+    avg_low_to_date_2021 = lows_to_date_2021[1].mean()
+
+    lows_2022 = daily_lows[daily_lows.index.year == 2022]
+    lows_to_date_2022 = lows_2022.head(day_of_year)
+    avg_low_to_date_2022 = lows_to_date_2022[1].mean()
+
+    lows_2023 = daily_lows[daily_lows.index.year == 2023]
+    lows_to_date_2023 = lows_2023.head(day_of_year)
+    avg_low_to_date_2023 = lows_to_date_2023[1].mean()
+
+
+
+    return [html.Div([
+        html.P('2018: {:.1f}'.format(avg_high_to_date_2018)),
+        html.P('2019: {:.1f}'.format(avg_high_to_date_2019)),
+        html.P('2020: {:.1f}'.format(avg_high_to_date_2020)),
+        html.P('2021: {:.1f}'.format(avg_high_to_date_2021)),
+        html.P('2022: {:.1f}'.format(avg_high_to_date_2022)),
+        html.P('2023: {:.1f}'.format(avg_high_to_date_2023)),
+    ]),
+    html.Div([
+        html.P('2018: {:.1f}'.format(avg_low_to_date_2018)),
+        html.P('2019: {:.1f}'.format(avg_low_to_date_2019)),
+        html.P('2020: {:.1f}'.format(avg_low_to_date_2020)),
+        html.P('2021: {:.1f}'.format(avg_low_to_date_2021)),
+        html.P('2022: {:.1f}'.format(avg_low_to_date_2022)),
+        html.P('2023: {:.1f}'.format(avg_low_to_date_2023)),
+    ])]
 
 @app.callback(
     Output('rec-high', 'children'),
@@ -354,7 +445,10 @@ def update_graph(n, daily_data, last_year, y2018, y2019, y2020, y2021, y2022):
     ]
     layout = go.Layout(
         xaxis=dict(tickformat='%H%M'),
-        height=500
+        height=500,
+        paper_bgcolor="#1f2630",
+        plot_bgcolor="#1f2630",
+        font=dict(color="#2cfec1"),
     )
     return {'data': data, 'layout': layout}
 
