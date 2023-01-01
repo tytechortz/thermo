@@ -63,22 +63,18 @@ def update_daily_stats(data):
 
 
     record_high = record_highs.loc[record_highs.index == today]
-    rh_val = record_high.iloc[0]
-    rh_val = rh_val[1]
     record_low = record_lows.loc[record_lows.index == today]
-    rl_val = record_low.iloc[0]
-    rl_val = rl_val[1]
-    print(rl_val)
+    
 
     return (html.Div([
             html.H6('Record High', style={'text-align':'center'}),
-            html.H6('{:.1f}'.format(rh_val), style={'text-align':'center'})
+            html.H6('{:.1f} - {}'.format(record_high.iloc[0,1], record_high.iloc[0,0][0:4]), style={'text-align':'center'})
         ],
             className='two columns pretty_container'
         ),
         html.Div([
             html.H6('Record Low', style={'text-align':'center'}),
-            html.H6('{:.1f}'.format(rl_val), style={'text-align':'center'})
+            html.H6('{:.1f} - {}'.format(record_low.iloc[0,1], record_low.iloc[0,0][0:4]), style={'text-align':'center'})
         ],
             className='two columns pretty_container'
         ))
