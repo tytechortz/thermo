@@ -2,6 +2,7 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
 import pandas as pd
+import plotly.graph_objs as go
 
 import requests
 import time
@@ -20,6 +21,11 @@ app.layout=html.Div([
         html.Div(id='daily-low', style={'color':'blue', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
         html.Div(id='rec-high', style={'color':'red', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
         html.Div(id='rec-low', style={'color':'blue', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
+    ],
+        className='row'
+    ),
+    html.Div([
+        dcc.Graph(id='graph')
     ],
         className='row'
     ),
@@ -44,6 +50,8 @@ app.layout=html.Div([
     dcc.Store(id='y2021', storage_type='session'),
     dcc.Store(id='y2022', storage_type='session'),
     dcc.Store(id='y2023', storage_type='session'),
+    dcc.Store(id='last-year', storage_type='session'),
+    dcc.Store(id='yest', storage_type='session'),
 ])
 
 @app.callback(
@@ -134,6 +142,7 @@ def update_layout(n):
     Output('y2021', 'data'),
     Output('y2022', 'data'),
     Output('y2023', 'data'),
+    Output('yest', 'data'),
     Input('raw-data', 'data'))
 def process_df_daily(data):
     df = pd.read_json(data)
@@ -160,7 +169,7 @@ def process_df_daily(data):
     df2020 = dfdm[dfdm.index.year == 2020]
     df2021 = dfdm[dfdm.index.year == 2021]
     df2022 = dfdm[dfdm.index.year == 2022]
-    df2023 = dfdm[dfdm.index.year == 2022]
+    df2023 = dfdm[dfdm.index.year == 2023]
     # print(df2022)
 
     record_high_temps = df_stats.groupby(df_stats.index.strftime('%m-%d')).max()
@@ -194,9 +203,142 @@ def process_df_daily(data):
     elif td == 1:
         df_yest = df_stats[(df_stats.index.day == months.get(tm)) & (df_stats.index.month == tm-1) & (df_stats.index.year == ty)]
 
-    return (dfdmy.to_json(), df2018.to_json(), df2019.to_json(), df2020.to_json(), df2021.to_json(), df2022.to_json(), df2023.to_json())
+    return (dfdmy.to_json(), df2018.to_json(), df2019.to_json(), df2020.to_json(), df2021.to_json(), df2022.to_json(), df2023.to_json(), df_yest.to_json())
     
+@app.callback(
+    Output('graph', 'figure'),
+    Input('interval-component', 'n_intervals'),
+    Input('daily-data', 'data'),
+    Input('last-year', 'data'),
+    Input('y2018', 'data'),
+    Input('y2019', 'data'),
+    Input('y2020', 'data'),
+    Input('y2021', 'data'),
+    Input('y2022', 'data'),
+    Input('yest', 'data'))
+def update_graph(n, daily_data, last_year, y2018, y2019, y2020, y2021, y2022, yest):
+    dfdmy = pd.read_json(daily_data)
+    dfdmy['time'] = pd.to_datetime(dfdmy[0])
+    dfdmy['time'] = dfdmy['time'].dt.strftime('%H:%M')
+    yest = pd.read_json(yest)
+    yest['time'] = pd.to_datetime(yest[0])
+    yest['time'] = yest['time'].dt.strftime('%H:%M')
 
+    dfly = pd.read_json(last_year)
+    dfly['time'] = pd.to_datetime(dfly[0])
+    dfly['time'] = dfly['time'].dt.strftime('%H:%M')
+
+    df_list=[]
+
+    df2018 = pd.read_json(y2018)
+    df2018['time'] = pd.to_datetime(df2018[0])
+    df2018['time'] = df2018['time'].dt.strftime('%H:%M')
+    df_list.append(df2018)
+
+    df2019 = pd.read_json(y2019)
+    df2019['time'] = pd.to_datetime(df2019[0])
+    df2019['time'] = df2019['time'].dt.strftime('%H:%M')
+    df_list.append(df2019)
+
+    df2020 = pd.read_json(y2020)
+    df2020['time'] = pd.to_datetime(df2020[0])
+    df2020['time'] = df2020['time'].dt.strftime('%H:%M')
+    df_list.append(df2020)
+
+    df2021 = pd.read_json(y2021)
+    df2021['time'] = pd.to_datetime(df2021[0])
+    df2021['time'] = df2021['time'].dt.strftime('%H:%M')
+    df_list.append(df2021)
+
+    df2022 = pd.read_json(y2022)
+    df2022['time'] = pd.to_datetime(df2022[0])
+    df2022['time'] = df2022['time'].dt.strftime('%H:%M')
+    df_list.append(df2022)
+    # if selected_date == ''
+    data = []
+    years = [2018,2023]
+    for df, y in zip(df_list,years):
+        data.append(go.Scatter(
+            x = df_list[df['time']],
+            y = df_list[1],
+            mode = 'markers+lines',
+            marker = dict(
+                color = 'black',
+            ),
+            name='{}'.format(y)
+        ))
+
+
+    # data = [
+    #     go.Scatter(
+    #         x = yest['time'],
+    #         y = yest[1],
+    #         mode = 'markers+lines',
+    #         marker = dict(
+    #             color = 'black',
+    #         ),
+    #         name='yesterday'
+    #     ),
+    #     go.Scatter(
+    #         x = dfdmy['time'],
+    #         y = dfdmy[1],
+    #         mode = 'markers+lines',
+    #         marker = dict(
+    #             color = 'red',
+    #         ),
+    #         name='today'
+    #     ),
+    #     go.Scatter(
+    #         x = df2018['time'],
+    #         y = df2018[1],
+    #         mode = 'markers+lines',
+    #         marker = dict(
+    #             color = 'orange',
+    #         ),
+    #         name='2018'
+    #     ),
+    #     go.Scatter(
+    #         x = df2019['time'],
+    #         y = df2019[1],
+    #         mode = 'markers+lines',
+    #         marker = dict(
+    #             color = 'blue',
+    #         ),
+    #         name='2019'
+    #     ),
+    #     go.Scatter(
+    #         x = df2020['time'],
+    #         y = df2020[1],
+    #         mode = 'markers+lines',
+    #         marker = dict(
+    #             color = 'turquoise',
+    #         ),
+    #         name='2020'
+    #     ),
+    #     go.Scatter(
+    #         x = df2021['time'],
+    #         y = df2021[1],
+    #         mode = 'markers+lines',
+    #         marker = dict(
+    #             color = 'green',
+    #         ),
+    #         name='2021'
+    #     ),
+    #     go.Scatter(
+    #         x = df2021['time'],
+    #         y = df2021[1],
+    #         mode = 'markers+lines',
+    #         marker = dict(
+    #             color = 'green',
+    #         ),
+    #         name='2021'
+    #     ),
+    # ]
+        layout = go.Layout(
+            xaxis=dict(tickformat='%H%M'),
+            height=500
+        )
+        return {'data': data, 'layout': layout}
 
 
 if __name__ == '__main__':
