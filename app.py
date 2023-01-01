@@ -75,14 +75,14 @@ def update_daily_stats(data):
     record_high_temps = df_stats.groupby(df_stats.index.strftime('%m-%d')).max()
     record_high = record_high_temps.loc[record_high_temps.index == today]
     record_highs = df_stats.resample('D').max()
-    daily_highs_date = record_highs.groupby([record_highs.index.month, record_highs.index.day]).idxmax()
+    daily_highs_date = record_highs.groupby([record_highs.index.month, record_highs.index.day]).idxmax(numeric_only=True)
     rec_high_date = daily_highs_date.loc[(tm,td), 1].year
  
 
     record_low_temps = df_stats.groupby(df_stats.index.strftime('%m-%d')).min()
     record_low = record_low_temps.loc[record_low_temps.index == today]
     record_lows = df_stats.resample('D').min()
-    daily_lows_date = record_lows.groupby([record_lows.index.month, record_lows.index.day]).idxmin()
+    daily_lows_date = record_lows.groupby([record_lows.index.month, record_lows.index.day]).idxmin(numeric_only=True)
     rec_low_date = daily_lows_date.loc[(tm,td), 1].year
 
     
@@ -155,7 +155,8 @@ def update_layout(n):
     Output('y2021', 'data'),
     Output('y2022', 'data'),
     Output('y2023', 'data'),
-    Output('yest', 'data'),
+    Output('last-year', 'data'),
+    # Output('yest', 'data'),
     Input('raw-data', 'data'))
 def process_df_daily(data):
     df = pd.read_json(data)
@@ -164,12 +165,13 @@ def process_df_daily(data):
     df_stats['datetime'] = pd.to_datetime(df_stats[0])
     df_stats = df_stats.set_index('datetime')
     today = time.strftime("%m-%d")
+  
 
     td = dt.now().day
     tm = dt.now().month
     ty = dt.now().year
     ly = ty-1
-    # print(ly)
+   
 
     dfd = df_stats[df_stats.index.day == td]
     dfdm = dfd[dfd.index.month == tm]
@@ -177,6 +179,7 @@ def process_df_daily(data):
     # print(dfdmy)
 
     dfly = dfdm[dfdm.index.year == ly]
+    # print(dfly)
     df2018 = dfdm[dfdm.index.year == 2018]
     df2019 = dfdm[dfdm.index.year == 2019]
     df2020 = dfdm[dfdm.index.year == 2020]
@@ -211,12 +214,13 @@ def process_df_daily(data):
     months = {1:31, 2:31, 3:28, 4:31, 5:30, 6:31, 7:30, 8:31, 9:31, 10:30, 11:31, 12:30}
     months_ly = {1:31, 2:31, 3:29, 4:31, 5:30, 6:31, 7:30, 8:31, 9:31, 10:30, 11:31, 12:30}
 
-    if td > 1:
-        df_yest = df_stats[(df_stats.index.day == td-1) & (df_stats.index.month == tm) & (df_stats.index.year == ty)]
-    elif td == 1:
-        df_yest = df_stats[(df_stats.index.day == months.get(tm)) & (df_stats.index.month == tm-1) & (df_stats.index.year == ty)]
+    # if td > 1:
+    #     df_yest = df_stats[(df_stats.index.day == td-1) & (df_stats.index.month == tm) & (df_stats.index.year == ty)]
+    # elif td == 1:
+    #     df_yest = df_stats[(df_stats.index.day == months.get(tm)) & (df_stats.index.month == tm-1) & (df_stats.index.year == ty)]
+    # print(df_yest)
 
-    return (dfdmy.to_json(), df2018.to_json(), df2019.to_json(), df2020.to_json(), df2021.to_json(), df2022.to_json(), df2023.to_json(), df_yest.to_json())
+    return (dfdmy.to_json(), df2018.to_json(), df2019.to_json(), df2020.to_json(), df2021.to_json(), df2022.to_json(), df2023.to_json(), dfly.to_json())
     
 @app.callback(
     Output('graph', 'figure'),
@@ -227,131 +231,132 @@ def process_df_daily(data):
     Input('y2019', 'data'),
     Input('y2020', 'data'),
     Input('y2021', 'data'),
-    Input('y2022', 'data'),
-    Input('yest', 'data'))
-def update_graph(n, daily_data, last_year, y2018, y2019, y2020, y2021, y2022, yest):
+    Input('y2022', 'data'))
+def update_graph(n, daily_data, last_year, y2018, y2019, y2020, y2021, y2022):
     dfdmy = pd.read_json(daily_data)
     dfdmy['time'] = pd.to_datetime(dfdmy[0])
     dfdmy['time'] = dfdmy['time'].dt.strftime('%H:%M')
-    yest = pd.read_json(yest)
-    yest['time'] = pd.to_datetime(yest[0])
-    yest['time'] = yest['time'].dt.strftime('%H:%M')
+    # print(dfdmy)
+    # yest = pd.read_json(yest)
+    # yest['time'] = pd.to_datetime(yest[0])
+    # yest['time'] = yest['time'].dt.strftime('%H:%M')
 
     dfly = pd.read_json(last_year)
     dfly['time'] = pd.to_datetime(dfly[0])
     dfly['time'] = dfly['time'].dt.strftime('%H:%M')
-
-    df_list=[]
+    print(dfly)
+    # df_list=[]
 
     df2018 = pd.read_json(y2018)
     df2018['time'] = pd.to_datetime(df2018[0])
     df2018['time'] = df2018['time'].dt.strftime('%H:%M')
-    df_list.append(df2018)
+    # df_list.append(df2018)
 
     df2019 = pd.read_json(y2019)
     df2019['time'] = pd.to_datetime(df2019[0])
     df2019['time'] = df2019['time'].dt.strftime('%H:%M')
-    df_list.append(df2019)
+    # df_list.append(df2019)
 
     df2020 = pd.read_json(y2020)
     df2020['time'] = pd.to_datetime(df2020[0])
     df2020['time'] = df2020['time'].dt.strftime('%H:%M')
-    df_list.append(df2020)
+    # df_list.append(df2020)
 
     df2021 = pd.read_json(y2021)
     df2021['time'] = pd.to_datetime(df2021[0])
     df2021['time'] = df2021['time'].dt.strftime('%H:%M')
-    df_list.append(df2021)
+    # df_list.append(df2021)
 
     df2022 = pd.read_json(y2022)
     df2022['time'] = pd.to_datetime(df2022[0])
     df2022['time'] = df2022['time'].dt.strftime('%H:%M')
-    df_list.append(df2022)
+    # df_list.append(df2022)
+    # print(df_list)
     # if selected_date == ''
-    data = []
-    years = [2018,2023]
-    for df, y in zip(df_list,years):
-        data.append(go.Scatter(
-            x = df_list[df['time']],
-            y = df_list[1],
-            mode = 'markers+lines',
-            marker = dict(
-                color = 'black',
-            ),
-            name='{}'.format(y)
-        ))
-
-
-    # data = [
-    #     go.Scatter(
-    #         x = yest['time'],
-    #         y = yest[1],
+    # data = []
+    # years = [2018,2023]
+    # for df, y in zip(df_list,years):
+    #     data.append(go.Scatter(
+    #         x = df_list[df['time']],
+    #         y = df_list[1],
     #         mode = 'markers+lines',
     #         marker = dict(
     #             color = 'black',
     #         ),
-    #         name='yesterday'
-    #     ),
-    #     go.Scatter(
-    #         x = dfdmy['time'],
-    #         y = dfdmy[1],
-    #         mode = 'markers+lines',
-    #         marker = dict(
-    #             color = 'red',
-    #         ),
-    #         name='today'
-    #     ),
-    #     go.Scatter(
-    #         x = df2018['time'],
-    #         y = df2018[1],
-    #         mode = 'markers+lines',
-    #         marker = dict(
-    #             color = 'orange',
-    #         ),
-    #         name='2018'
-    #     ),
-    #     go.Scatter(
-    #         x = df2019['time'],
-    #         y = df2019[1],
-    #         mode = 'markers+lines',
-    #         marker = dict(
-    #             color = 'blue',
-    #         ),
-    #         name='2019'
-    #     ),
-    #     go.Scatter(
-    #         x = df2020['time'],
-    #         y = df2020[1],
-    #         mode = 'markers+lines',
-    #         marker = dict(
-    #             color = 'turquoise',
-    #         ),
-    #         name='2020'
-    #     ),
-    #     go.Scatter(
-    #         x = df2021['time'],
-    #         y = df2021[1],
-    #         mode = 'markers+lines',
-    #         marker = dict(
-    #             color = 'green',
-    #         ),
-    #         name='2021'
-    #     ),
-    #     go.Scatter(
-    #         x = df2021['time'],
-    #         y = df2021[1],
-    #         mode = 'markers+lines',
-    #         marker = dict(
-    #             color = 'green',
-    #         ),
-    #         name='2021'
-    #     ),
-    # ]
-        layout = go.Layout(
-            xaxis=dict(tickformat='%H%M'),
-            height=500
-        )
-        return {'data': data, 'layout': layout}
+    #         name='{}'.format(y)
+    #     ))
+
+    # print(data)
+    data = [
+        # go.Scatter(
+        #     x = yest['time'],
+        #     y = yest[1],
+        #     mode = 'markers+lines',
+        #     marker = dict(
+        #         color = 'black',
+        #     ),
+        #     name='yesterday'
+        # ),
+        go.Scatter(
+            x = dfdmy['time'],
+            y = dfdmy[1],
+            mode = 'markers+lines',
+            marker = dict(
+                color = 'red',
+            ),
+            name='today'
+        ),
+        go.Scatter(
+            x = df2018['time'],
+            y = df2018[1],
+            mode = 'markers+lines',
+            marker = dict(
+                color = 'orange',
+            ),
+            name='2018'
+        ),
+        go.Scatter(
+            x = df2019['time'],
+            y = df2019[1],
+            mode = 'markers+lines',
+            marker = dict(
+                color = 'blue',
+            ),
+            name='2019'
+        ),
+        go.Scatter(
+            x = df2020['time'],
+            y = df2020[1],
+            mode = 'markers+lines',
+            marker = dict(
+                color = 'turquoise',
+            ),
+            name='2020'
+        ),
+        go.Scatter(
+            x = df2021['time'],
+            y = df2021[1],
+            mode = 'markers+lines',
+            marker = dict(
+                color = 'green',
+            ),
+            name='2021'
+        ),
+        go.Scatter(
+            x = df2022['time'],
+            y = df2022[1],
+            mode = 'markers+lines',
+            marker = dict(
+                color = 'yellow',
+            ),
+            name='2022'
+        ),
+    ]
+    layout = go.Layout(
+        xaxis=dict(tickformat='%H%M'),
+        height=500
+    )
+    return {'data': data, 'layout': layout}
 
 
 if __name__ == '__main__':
