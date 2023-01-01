@@ -74,14 +74,10 @@ def update_daily_stats(data):
 
     record_high_temps = df_stats.groupby(df_stats.index.strftime('%m-%d')).max()
     record_high = record_high_temps.loc[record_high_temps.index == today]
-    print(record_high)
-
     record_highs = df_stats.resample('D').max()
-    print(record_highs)
     daily_highs_date = record_highs.groupby([record_highs.index.month, record_highs.index.day]).idxmax()
-    print(daily_highs_date)
     rec_high_date = daily_highs_date.loc[(tm,td), 1].year
-    print(rec_high_date)
+ 
 
     record_low_temps = df_stats.groupby(df_stats.index.strftime('%m-%d')).min()
     record_low = record_low_temps.loc[record_low_temps.index == today]
@@ -89,11 +85,6 @@ def update_daily_stats(data):
     daily_lows_date = record_lows.groupby([record_lows.index.month, record_lows.index.day]).idxmin()
     rec_low_date = daily_lows_date.loc[(tm,td), 1].year
 
-    
-    # print(rec_low_date)
-
-    # record_high = record_highs.loc[record_highs.index == today]
-    # record_low = record_lows.loc[record_lows.index == today]
     
 
     return (html.Div([
