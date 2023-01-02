@@ -18,10 +18,16 @@ app.config['suppress_callback_exceptions']=True
 app.layout=html.Div([
     html.Div([
         html.Div(id='live-thermometer', style={'color':'green', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
+    ],
+        className='row'
+    ),
+    html.Div([
         html.Div(id='daily-high', style={'color':'red', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
         html.Div(id='daily-low', style={'color':'blue', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
         html.Div(id='rec-high', style={'color':'red', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
         html.Div(id='rec-low', style={'color':'blue', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
+        html.Div(id='year-high', style={'color':'red', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
+        html.Div(id='year-low', style={'color':'blue', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
     ],
         className='row'
     ),
@@ -62,18 +68,47 @@ app.layout=html.Div([
 ])
 
 @app.callback(
+    Output('year-high', 'children'),
+    Output('year-low', 'children'),
+    Input('raw-data', 'data'))
+def update_daily_stats(data):
+    df = pd.read_json(data)
+    df['datetime'] = pd.to_datetime(df[0])
+    df = df.set_index('datetime')
+
+    ty = dt.now().year
+    dfy = df[df.index.year == ty]
+    yearly_high = dfy[1].max()
+    yearly_high_date = dfy[1].idxmax()
+    print(yearly_high)
+
+    return (html.Div([
+            html.H6('Annual High', style={'text-align':'center'}),
+            html.H6('{:.1f} : {}'.format(yearly_high, yearly_high_date.strftime('%m-%d')), style={'text-align':'center'})
+        ],
+            className='two columns pretty_container'
+        ),
+        html.Div([
+            html.H6('Annual Low', style={'text-align':'center'}),
+            # html.H6('{:.1f} - {}'.format(yearly_low.iloc[0,1], rec_low_date), style={'text-align':'center'})
+        ],
+            className='two columns pretty_container'
+        ))
+
+
+@app.callback(
     Output('avg-high', 'children'),
     Output('avg-low', 'children'),
     Output('avg', 'children'),
-    [Input('interval-component-graph', 'n_intervals')])
+    Input('interval-component-graph', 'n_intervals'))
 def averages(n):
     day_of_year = dt.now().timetuple().tm_yday
-    print(day_of_year)
+ 
     df = pd.read_csv('../../tempjan19.csv', header=None)
     df_s = df
     df_s['date'] = pd.to_datetime(df_s[0])
     df_s = df_s.set_index('date')
-    print(df_s)
+
 
     daily_highs = df_s.resample('D').max()
     daily_high = daily_highs.groupby([daily_highs.index.month, daily_highs.index.day]).idxmax(numeric_only=True)
@@ -137,36 +172,7 @@ def averages(n):
     avg_2022 = (avg_high_to_date_2022 + avg_low_to_date_2022) / 2
     avg_2023 = (avg_high_to_date_2023 + avg_low_to_date_2023) / 2
 
-    # daily_avgs = df_s.resample('D').mean()
-    # print(daily_avgs)
-
-    # avgs_2018 = daily_avgs[daily_avgs.index.year == 2018]
-    # avgs_to_date_2018 = avgs_2018.head(day_of_year)
-    # # print(avgs_to_date_2018)
-    # avg_to_date_2018 = avgs_to_date_2018.mean()
-    # # print(avg_to_date_2018)
-
-    # avgs_2019 = daily_avgs[daily_avgs.index.year == 2019]
-    # avgs_to_date_2019 = avgs_2019.head(day_of_year)
-    # avg_to_date_2019 = avgs_to_date_2019[1].mean()
-
-    # avgs_2020 = daily_avgs[daily_avgs.index.year == 2020]
-    # avgs_to_date_2020 = avgs_2020.head(day_of_year)
-    # avg_to_date_2020 = avgs_to_date_2020[1].mean()
-
-    # avgs_2021 = daily_avgs[daily_avgs.index.year == 2021]
-    # avgs_to_date_2021 = avgs_2021.head(day_of_year)
-    # avg_to_date_2021 = avgs_to_date_2021[1].mean()
-
-    # avgs_2022 = daily_lows[daily_avgs.index.year == 2022]
-    # avgs_to_date_2022 = avgs_2022.head(day_of_year)
-    # avg_to_date_2022 = avgs_to_date_2022[1].mean()
-
-    # avgs_2023 = daily_lows[daily_avgs.index.year == 2023]
-    # avgs_to_date_2023 = avgs_2023.head(day_of_year)
-    # avg_to_date_2023 = avgs_to_date_2023[1].mean()
-
-    
+  
 
     return (html.Div([
         html.H6('Avg High'),
@@ -290,10 +296,10 @@ def update_layout(n):
     f = ((9.0/5.0) * data) + 32
 
     return html.Div([
-            html.H6('Current Temp', style={'text-align':'center'}),
-            html.H6('{:.1f}'.format(f), style={'text-align':'center'})
+            html.H4('Current Temp : {:.1f}'.format(f), style={'text-align':'center'}),
+            # html.H4('{:.1f}'.format(f), style={'text-align':'center'})
         ],
-            className='two columns pretty_container'
+            className='three columns pretty_container'
         )
         
 @app.callback(Output('raw-data', 'data'),
@@ -400,7 +406,7 @@ def update_graph(n, daily_data, last_year, y2018, y2019, y2020, y2021, y2022):
     dfly = pd.read_json(last_year)
     dfly['time'] = pd.to_datetime(dfly[0])
     dfly['time'] = dfly['time'].dt.strftime('%H:%M')
-    print(dfly)
+    # print(dfly)
     # df_list=[]
 
     df2018 = pd.read_json(y2018)
@@ -467,7 +473,7 @@ def update_graph(n, daily_data, last_year, y2018, y2019, y2020, y2021, y2022):
             y = df2018[1],
             mode = 'markers+lines',
             marker = dict(
-                color = 'orange',
+                color = 'maroon',
             ),
             name='2018'
         ),
@@ -485,7 +491,7 @@ def update_graph(n, daily_data, last_year, y2018, y2019, y2020, y2021, y2022):
             y = df2020[1],
             mode = 'markers+lines',
             marker = dict(
-                color = 'turquoise',
+                color = 'orange',
             ),
             name='2020'
         ),
@@ -494,7 +500,7 @@ def update_graph(n, daily_data, last_year, y2018, y2019, y2020, y2021, y2022):
             y = df2021[1],
             mode = 'markers+lines',
             marker = dict(
-                color = 'green',
+                color = 'yellow',
             ),
             name='2021'
         ),
@@ -503,7 +509,7 @@ def update_graph(n, daily_data, last_year, y2018, y2019, y2020, y2021, y2022):
             y = df2022[1],
             mode = 'markers+lines',
             marker = dict(
-                color = 'yellow',
+                color = 'turquoise',
             ),
             name='2022'
         ),
