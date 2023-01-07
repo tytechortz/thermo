@@ -79,7 +79,19 @@ def update_daily_stats(n, yest):
     yest_max = yest[1].max()
     yest_min = yest[1].min()
 
-    return html.H5('High: {:.1f}'.format(yest_max)), html.H5('Low: {:.1f}'.format(yest_min))
+    return (html.Div([
+                html.H6('Y-High'),
+                html.H6('{:.1f}'.format(yest_max))
+            ],
+                className='two columns pretty_container'
+            ),
+            html.Div([
+                html.H6('Y-Low'),
+                html.H6('{:.1f}'.format(yest_min))
+            ],
+                className='two columns pretty_container'
+            ))
+
 
 @app.callback(
     Output('year-high', 'children'),
