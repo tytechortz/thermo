@@ -18,12 +18,12 @@ app.config['suppress_callback_exceptions']=True
 app.layout=html.Div([
     html.Div([
         html.Div(id='live-thermometer', style={'color':'green', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
+        html.Div(id='daily-high', style={'color':'red', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
+        html.Div(id='daily-low', style={'color':'blue', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
     ],
         className='row'
     ),
     html.Div([
-        html.Div(id='daily-high', style={'color':'red', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
-        html.Div(id='daily-low', style={'color':'blue', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
         html.Div(id='rec-high', style={'color':'red', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
         html.Div(id='rec-low', style={'color':'blue', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
         html.Div(id='year-high', style={'color':'red', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
@@ -81,6 +81,8 @@ def update_daily_stats(data):
     yearly_high = dfy[1].max()
     yearly_high_date = dfy[1].idxmax()
     print(yearly_high)
+    yearly_low = dfy[1].min()
+    yearly_low_date = dfy[1].idxmin()
 
     return (html.Div([
             html.H6('Annual High', style={'text-align':'center'}),
@@ -90,7 +92,7 @@ def update_daily_stats(data):
         ),
         html.Div([
             html.H6('Annual Low', style={'text-align':'center'}),
-            # html.H6('{:.1f} - {}'.format(yearly_low.iloc[0,1], rec_low_date), style={'text-align':'center'})
+            html.H6('{:.1f} : {}'.format(yearly_low, yearly_low_date.strftime('%m-%d')), style={'text-align':'center'})
         ],
             className='two columns pretty_container'
         ))
