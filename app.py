@@ -20,6 +20,8 @@ app.layout=html.Div([
         html.Div(id='live-thermometer', style={'color':'green', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
         html.Div(id='daily-high', style={'color':'red', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
         html.Div(id='daily-low', style={'color':'blue', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
+        html.Div(id='yest-high', style={'color':'red', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
+        html.Div(id='yest-low', style={'color':'blue', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
     ],
         className='row'
     ),
@@ -66,6 +68,18 @@ app.layout=html.Div([
     dcc.Store(id='last-year', storage_type='session'),
     dcc.Store(id='yest', storage_type='session'),
 ])
+
+@app.callback([
+    Output('yest-high', 'children'),
+    Output('yest-low', 'children')],
+    Input('interval-component-graph', 'n_intervals'),
+    Input('yest', 'data'))
+def update_daily_stats(n, yest):
+    yest = pd.read_json(yest)
+    yest_max = yest[1].max()
+    yest_min = yest[1].min()
+
+    return html.H5('High: {:.1f}'.format(yest_max)), html.H5('Low: {:.1f}'.format(yest_min))
 
 @app.callback(
     Output('year-high', 'children'),
@@ -320,7 +334,7 @@ def update_layout(n):
     Output('y2022', 'data'),
     Output('y2023', 'data'),
     Output('last-year', 'data'),
-    # Output('yest', 'data'),
+    Output('yest', 'data'),
     Input('raw-data', 'data'))
 def process_df_daily(data):
     df = pd.read_json(data)
@@ -378,13 +392,13 @@ def process_df_daily(data):
     months = {1:31, 2:31, 3:28, 4:31, 5:30, 6:31, 7:30, 8:31, 9:31, 10:30, 11:31, 12:30}
     months_ly = {1:31, 2:31, 3:29, 4:31, 5:30, 6:31, 7:30, 8:31, 9:31, 10:30, 11:31, 12:30}
 
-    # if td > 1:
-    #     df_yest = df_stats[(df_stats.index.day == td-1) & (df_stats.index.month == tm) & (df_stats.index.year == ty)]
-    # elif td == 1:
-    #     df_yest = df_stats[(df_stats.index.day == months.get(tm)) & (df_stats.index.month == tm-1) & (df_stats.index.year == ty)]
+    if td > 1:
+        df_yest = df_stats[(df_stats.index.day == td-1) & (df_stats.index.month == tm) & (df_stats.index.year == ty)]
+    elif td == 1:
+        df_yest = df_stats[(df_stats.index.day == months.get(tm)) & (df_stats.index.month == tm-1) & (df_stats.index.year == ty)]
     # print(df_yest)
 
-    return (dfdmy.to_json(), df2018.to_json(), df2019.to_json(), df2020.to_json(), df2021.to_json(), df2022.to_json(), df2023.to_json(), dfly.to_json())
+    return (dfdmy.to_json(), df2018.to_json(), df2019.to_json(), df2020.to_json(), df2021.to_json(), df2022.to_json(), df2023.to_json(), dfly.to_json(), df_yest.to_json())
     
 @app.callback(
     Output('graph', 'figure'),
