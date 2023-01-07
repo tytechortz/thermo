@@ -298,10 +298,10 @@ def update_layout(n):
     f = ((9.0/5.0) * data) + 32
 
     return html.Div([
-            html.H4('Current Temp : {:.1f}'.format(f), style={'text-align':'center'}),
+            html.H2('{:.1f}'.format(f), style={'text-align':'center'}),
             # html.H4('{:.1f}'.format(f), style={'text-align':'center'})
         ],
-            className='three columns pretty_container'
+            className='two columns pretty_container'
         )
         
 @app.callback(Output('raw-data', 'data'),
