@@ -22,6 +22,7 @@ app.layout=html.Div([
         html.Div(id='daily-low', style={'color':'blue', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
         html.Div(id='yest-high', style={'color':'red', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
         html.Div(id='yest-low', style={'color':'blue', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
+        html.Div(id='aqi', style={'color':'black', 'font-size': 25, 'font-family':'sans-serif', 'text-align':'center'}),
     ],
         className='row'
     ),
@@ -69,6 +70,22 @@ app.layout=html.Div([
     dcc.Store(id='yest', storage_type='session'),
 ])
 
+@app.callback(
+        Output('aqi', 'children'),
+        Input('interval-component-graph', 'n_intervals')
+)
+def updata_aqi(n):
+    air_df = pd.read_csv('https://www.airnowapi.org/aq/data/?startDate=2023-05-20T13&endDate=2023-05-20T14&parameters=PM25&BBOX=-104.966591,39.729676,-104.913032,39.750796&dataType=A&format=text/csv&verbose=0&monitorType=0&includerawconcentrations=0&API_KEY=1A91F885-CD4E-4EBC-9AFF-1AC398A78966')
+    aqi = air_df.columns[4]
+
+    return html.Div([
+                html.H6('AQI'),
+                html.H6('{}'.format(aqi))
+            ],
+                className= 'two columns pretty_container'
+            )
+
+
 @app.callback([
     Output('yest-high', 'children'),
     Output('yest-low', 'children')],
@@ -80,13 +97,13 @@ def update_daily_stats(n, yest):
     yest_min = yest[1].min()
 
     return (html.Div([
-                html.H6('Y-High'),
+                html.H6('Yest-High'),
                 html.H6('{:.1f}'.format(yest_max))
             ],
                 className='two columns pretty_container'
             ),
             html.Div([
-                html.H6('Y-Low'),
+                html.H6('Yest-Low'),
                 html.H6('{:.1f}'.format(yest_min))
             ],
                 className='two columns pretty_container'
