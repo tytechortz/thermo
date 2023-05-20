@@ -6,7 +6,8 @@ import plotly.graph_objs as go
 
 import requests
 import time
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta
+
 
 url = "http://10.0.1.7:8080"
 
@@ -75,12 +76,23 @@ app.layout=html.Div([
         Input('interval-component-graph', 'n_intervals')
 )
 def updata_aqi(n):
-    air_df = pd.read_csv('https://www.airnowapi.org/aq/data/?startDate=2023-05-20T13&endDate=2023-05-20T14&parameters=PM25&BBOX=-104.966591,39.729676,-104.913032,39.750796&dataType=A&format=text/csv&verbose=0&monitorType=0&includerawconcentrations=0&API_KEY=1A91F885-CD4E-4EBC-9AFF-1AC398A78966')
+    print(n)
+    ct = dt.now().strftime('%Y-%m-%d')
+    ch = dt.now().hour
+    chs = str(ch)
+    cte = ch + 5
+    ctes = str(cte)
+    cteend = cte + 1
+    cts = str(cteend)
+    # air_df = pd.read_csv('https://www.airnowapi.org/aq/data/?startDate=2023-05-20T17&endDate=2023-05-20T18&parameters=PM25&BBOX=-104.948260,39.733721,-104.931780,39.744545&dataType=A&format=text/csv&verbose=0&monitorType=0&includerawconcentrations=0&API_KEY=1A91F885-CD4E-4EBC-9AFF-1AC398A78966')
+    air_df = pd.read_csv('https://www.airnowapi.org/aq/data/?startDate=' + ct + 'T' + ctes + '&endDate=' + ct + 'T' + cts + '&parameters=PM25&BBOX=-104.948260,39.733721,-104.931780,39.744545&dataType=A&format=text/csv&verbose=0&monitorType=0&includerawconcentrations=0&API_KEY=1A91F885-CD4E-4EBC-9AFF-1AC398A78966')
+    print(air_df)
     aqi = air_df.columns[4]
+    tme = air_df.columns[2][-5:]
 
     return html.Div([
                 html.H6('AQI'),
-                html.H6('{}'.format(aqi))
+                html.H6('{} - {}'.format(aqi, tme)),
             ],
                 className= 'two columns pretty_container'
             )
@@ -92,6 +104,7 @@ def updata_aqi(n):
     Input('interval-component-graph', 'n_intervals'),
     Input('yest', 'data'))
 def update_daily_stats(n, yest):
+    
     yest = pd.read_json(yest)
     yest_max = yest[1].max()
     yest_min = yest[1].min()
